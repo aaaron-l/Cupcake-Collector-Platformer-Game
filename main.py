@@ -7,19 +7,64 @@ WIDTH = 1820
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Cupcake Project")
 clock = pygame.time.Clock()
+font = pygame.font.SysFont(None, 40)
 
 running = True
 
 player_image = pygame.image.load("player.png").convert_alpha()
 player_image = pygame.transform.scale(player_image, (50, 50))
 
-player_x = 1200
-player_y = 280
+cupcake_image = pygame.image.load(
+    "cupcake.png"
+).convert_alpha()
+
+cupcake_image = pygame.transform.scale(
+    cupcake_image,
+    (30, 30)
+)
+
+player_x = 0
+player_y = 930
 player_dy = 0
 
 gravity = 0.5
 jump_speed = -10
 on_ground = False
+
+CUPCAKES = [
+    pygame.Rect(175, 900, 30, 30),
+    pygame.Rect(175, 810, 30, 30),
+    pygame.Rect(175, 710, 30, 30),
+    pygame.Rect(1200, 660, 30, 30),
+    pygame.Rect(1250, 820, 30, 30),
+    pygame.Rect(1250, 900, 30, 30),
+    pygame.Rect(1790, 740, 30, 30),
+    pygame.Rect(1790, 900, 30, 30),
+    pygame.Rect(1750, 900, 30, 30),
+    pygame.Rect(1710, 900, 30, 30),
+    pygame.Rect(1670, 900, 30, 30),
+    pygame.Rect(1790, 570, 30, 30),
+    pygame.Rect(1790, 390, 30, 30),
+    pygame.Rect(1690, 480, 30, 30),
+    pygame.Rect(0, 300, 30, 30),
+    pygame.Rect(30, 300, 30, 30),
+    pygame.Rect(60, 300, 30, 30),
+    pygame.Rect(90, 300, 30, 30),
+    pygame.Rect(120, 300, 30, 30),
+    pygame.Rect(150, 300, 30, 30),
+    pygame.Rect(180, 300, 30, 30),
+    pygame.Rect(210, 300, 30, 30),
+    pygame.Rect(240, 300, 30, 30),
+    pygame.Rect(270, 300, 30, 30),
+    pygame.Rect(300, 300, 30, 30),
+    pygame.Rect(330, 300, 30, 30),
+    pygame.Rect(360, 300, 30, 30),
+    pygame.Rect(390, 300, 30, 30),
+    pygame.Rect(420, 300, 30, 30),
+    pygame.Rect(450, 300, 30, 30),
+    pygame.Rect(480, 300, 30, 30),
+    pygame.Rect(510, 300, 30, 30)
+]
 
 platforms = [
     pygame.Rect(0, 930, WIDTH, 50),
@@ -51,9 +96,10 @@ sliding_vert = [
 ]
 
 kill_bricks = [
-
+    pygame.Rect(530, 800, 670, 130)
 ]
 
+cupcakes = CUPCAKES[:]
 while running:
 
     for event in pygame.event.get():
@@ -66,6 +112,21 @@ while running:
         50,
         50
     )
+    
+    # Reset player and cupcakes
+    for platform in kill_bricks:
+        if player_rect.colliderect(platform):
+            player_x = 0
+            player_y = 930
+            player_rect = pygame.Rect(
+                player_x,
+                player_y,
+                50,
+                50
+            )
+
+            cupcakes = CUPCAKES[:]
+
 
     for i, (platform, speed, right_lim, left_lim) in enumerate(sliding_hori):
         old_platform_x = platform.x
@@ -244,7 +305,29 @@ while running:
             platform
         )
 
+    for platform in kill_bricks:
+        pygame.draw.rect(
+            screen,
+            (255, 0, 0),
+            platform
+        )
+    
+    for cupcake in cupcakes[:]:
+
+        if player_rect.colliderect(cupcake):
+            cupcakes.remove(cupcake)
+
     screen.blit(player_image, (player_x, player_y))
+
+    for cupcake in cupcakes:
+        screen.blit(
+            cupcake_image,
+            (cupcake.x, cupcake.y)
+        )
+
+    score_surface = font.render(f"Cupcakes left: {len(cupcakes)}/{len(CUPCAKES)}", True, (255, 255, 255))
+    screen.blit(score_surface, (20, 20))
+
 
     pygame.display.flip()
 
