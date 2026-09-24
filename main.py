@@ -1,6 +1,11 @@
 import pygame
 
 pygame.init()
+pygame.mixer.init()
+pygame.mixer.music.load("bgm.mp3")
+pygame.mixer.music.set_volume(.4)
+pygame.mixer.music.play(-1)
+
 
 HEIGHT = 980
 WIDTH = 1820
@@ -24,7 +29,7 @@ cupcake_image = pygame.transform.scale(
 )
 
 player_x = 0
-player_y = 930
+player_y = 880
 player_dy = 0
 
 gravity = 0.5
@@ -96,10 +101,17 @@ sliding_vert = [
 ]
 
 kill_bricks = [
-    pygame.Rect(530, 800, 670, 130)
+    pygame.Rect(530, 800, 670, 130),
+    pygame.Rect(1200, 310, 50, 20),
+    pygame.Rect(1350, 310, 50, 20),
+    pygame.Rect(1500, 310, 50, 20),
+    pygame.Rect(1650, 310, 50, 20)
 ]
 
 cupcakes = CUPCAKES[:]
+win = False
+win_played = False
+
 while running:
 
     for event in pygame.event.get():
@@ -116,14 +128,18 @@ while running:
     # Reset player and cupcakes
     for platform in kill_bricks:
         if player_rect.colliderect(platform):
-            player_x = 0
-            player_y = 930
+            player_x = 10
+            player_y = 880
+            player_dy = 0
+            on_ground = True
             player_rect = pygame.Rect(
                 player_x,
                 player_y,
                 50,
                 50
             )
+
+            pygame.mixer.Sound("uhoh.mp3").play()
 
             cupcakes = CUPCAKES[:]
 
@@ -216,6 +232,9 @@ while running:
     if keys[pygame.K_UP] and on_ground:
         player_dy = jump_speed
         on_ground = False
+        jump_sound = pygame.mixer.Sound("jump.mp3")
+        jump_sound.set_volume(.5)
+        jump_sound.play()
 
     player_dy += gravity
     player_y += player_dy
@@ -316,6 +335,10 @@ while running:
 
         if player_rect.colliderect(cupcake):
             cupcakes.remove(cupcake)
+            pygame.mixer.Sound("eat.mp3").play()
+
+    if len(cupcakes) == 0:
+        win = True
 
     screen.blit(player_image, (player_x, player_y))
 
@@ -328,6 +351,29 @@ while running:
     score_surface = font.render(f"Cupcakes left: {len(cupcakes)}/{len(CUPCAKES)}", True, (255, 255, 255))
     screen.blit(score_surface, (20, 20))
 
+    if win:
+        win_surface = font.render("You Win!", True, (255, 255, 255))
+        score_surface = font.render("All cupcakes collected!", True, (255, 255, 255))
+
+        screen.blit(
+            win_surface,
+            (
+                WIDTH // 2 - win_surface.get_width() // 2,
+                HEIGHT // 2 - 50
+            )
+        )
+
+        screen.blit(
+            score_surface,
+            (
+                WIDTH // 2 - score_surface.get_width() // 2,
+                HEIGHT // 2
+            )
+        )
+
+        if not win_played:
+            pygame.mixer.Sound("win.mp3").play()
+            win_played = True
 
     pygame.display.flip()
 
